@@ -220,9 +220,10 @@ function renderArticles() {
     });
 
     list.innerHTML = filtered.map((post) => `
-      <a class="post-list-item card" href="#post/${post.id}">
-        <div class="date">${formatDate(post.date)}</div>
+      <a class="post-list-item card ${post.cover ? "has-cover" : ""}" href="#post/${post.id}">
+        ${post.cover ? `<img class="post-list-thumb" src="${encodeURI(post.cover)}" alt="${escapeHTML(post.title)}" loading="lazy" />` : `<div class="date">${formatDate(post.date)}</div>`}
         <div>
+          ${post.cover ? `<div class="date">${formatDate(post.date)}</div>` : ""}
           <span class="tag">${escapeHTML(post.category)}</span>
           <h3>${escapeHTML(post.title)}</h3>
           <p>${escapeHTML(post.excerpt)}</p>
@@ -296,7 +297,16 @@ function renderPost(postId) {
   document.getElementById("postExcerpt").textContent = post.excerpt;
   document.getElementById("postContent").innerHTML = post.content || "";
 
+  const coverWrap = document.getElementById("postCoverWrap");
+  const coverImage = document.getElementById("postCoverImage");
+  if (post.cover && coverWrap && coverImage) {
+    coverWrap.hidden = false;
+    coverImage.src = encodeURI(post.cover);
+    coverImage.alt = post.title;
+  }
+
   document.title = `${post.title} - ${SITE_SETTINGS.siteName || "WANGGU BLOG"}`;
+  setupContentImages();
   setActiveNav("post");
 }
 
@@ -666,4 +676,53 @@ function setupHeroParallax(root) {
 }
 
 // 顶部深色模式按钮也加入点击水波纹
+
+
+function setupContentImages() {
+  const content = document.getElementById("postContent");
+  if (!content) return;
+
+  content.querySelectorAll("img").forEach((image) => {
+    if (!image.getAttribute("loading")) {
+      image.setAttribute("loading", "lazy");
+    }
+
+    image.addEventListener("click", () => openImageLightbox(image.src, image.alt || ""));
+  });
+}
+
+const imageLightbox = document.getElementById("imageLightbox");
+const lightboxImage = document.getElementById("lightboxImage");
+const lightboxClose = document.getElementById("lightboxClose");
+
+function openImageLightbox(src, alt) {
+  if (!imageLightbox || !lightboxImage) return;
+  lightboxImage.src = src;
+  lightboxImage.alt = alt;
+  imageLightbox.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+
+function closeImageLightbox() {
+  if (!imageLightbox || !lightboxImage) return;
+  imageLightbox.hidden = true;
+  lightboxImage.src = "";
+  lightboxImage.alt = "";
+  document.body.style.overflow = "";
+}
+
+lightboxClose?.addEventListener("click", closeImageLightbox);
+
+imageLightbox?.addEventListener("click", (event) => {
+  if (event.target === imageLightbox) {
+    closeImageLightbox();
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && imageLightbox && !imageLightbox.hidden) {
+    closeImageLightbox();
+  }
+});
+
 setupRipples(document);

@@ -1370,3 +1370,136 @@ body {
   display: grid;
   place-content: center;
 }
+
+
+/* 文章封面与正文图片支持升级 */
+.post-cover-wrap {
+  margin-top: 18px;
+  overflow: hidden;
+  padding: 0;
+}
+
+.post-cover-image {
+  display: block;
+  width: 100%;
+  max-height: 560px;
+  object-fit: cover;
+}
+
+.article-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 22px auto;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.10);
+  background: rgba(127,127,127,.06);
+  cursor: zoom-in;
+}
+
+.article-body figure {
+  margin: 28px 0;
+}
+
+.article-body figure img {
+  margin-bottom: 12px;
+}
+
+.article-body figcaption {
+  color: var(--muted);
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.article-body a img:hover,
+.article-body img:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.13);
+}
+
+.article-body img,
+.post-cover-image {
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.post-cover-image:hover {
+  transform: scale(1.01);
+}
+
+.post-list-item.has-cover {
+  grid-template-columns: 126px 1fr auto;
+}
+
+.post-list-thumb {
+  width: 126px;
+  height: 92px;
+  border-radius: 18px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  background: rgba(127,127,127,.08);
+}
+
+.image-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(0,0,0,.82);
+  backdrop-filter: blur(10px);
+}
+
+.image-lightbox[hidden] {
+  display: none;
+}
+
+.lightbox-image {
+  max-width: min(92vw, 1400px);
+  max-height: 86vh;
+  border-radius: 24px;
+  box-shadow: 0 25px 80px rgba(0,0,0,.28);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 46px;
+  height: 46px;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 15px;
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lightbox-close:hover {
+  background: rgba(255,255,255,.16);
+}
+
+@media (max-width: 900px) {
+  .post-list-item.has-cover {
+    grid-template-columns: 1fr auto;
+  }
+
+  .post-list-thumb {
+    width: 100%;
+    height: 200px;
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 600px) {
+  .post-cover-image {
+    max-height: 280px;
+  }
+
+  .article-body img {
+    border-radius: 16px;
+  }
+}

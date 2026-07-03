@@ -144,9 +144,18 @@
         <h1 id="postTitle"></h1>
         <p id="postExcerpt"></p>
       </header>
+      <div id="postCoverWrap" class="post-cover-wrap card" hidden>
+        <img id="postCoverImage" class="post-cover-image" src="" alt="" loading="lazy" />
+      </div>
       <section id="postContent" class="article-body card"></section>
     </article>
   </template>
+
+
+  <div id="imageLightbox" class="image-lightbox" hidden>
+    <button id="lightboxClose" class="lightbox-close" type="button" aria-label="关闭图片预览">×</button>
+    <img id="lightboxImage" class="lightbox-image" src="" alt="" />
+  </div>
 
   <script src="script.js"></script>
 </body>
