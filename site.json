@@ -7,14 +7,14 @@
   "heroDescription": "这里分享我正在做的项目、解决过的问题，以及一路上的经验和想法。",
   "featuredTitle": "精选文章",
   "updateTitle": "持续更新中",
-  "updateDescription": "博客会继续记录技术实践、跨境业务和个人成长。",
+  "updateDescription": "博客会继续记录技术实践和个人成长。",
   "aboutTitle": "你好，我是这个博客的作者。",
-  "aboutParagraph1": "我是一名自由职业者，平时关注技术工具、跨境电商、网站搭建与效率提升。",
+  "aboutParagraph1": "我是一名自由职业者，平时关注技术工具、网站搭建与效率提升。",
   "aboutParagraph2": "这个博客用来记录真实的实践过程：做过什么、踩过哪些坑、最后怎样解决。",
   "aboutParagraph3": "这里不会刻意追求复杂，内容会尽量直接、清楚、可操作。",
   "authorName": "罔顾",
   "authorTagline": "自由职业者 · 实践者 · 持续学习",
-  "topics": "技术 / 跨境电商 / 效率工具",
+  "topics": "技术 / 效率工具",
   "website": "wanggu.top",
   "footerText": "由 Cloudflare Pages 托管"
 }
