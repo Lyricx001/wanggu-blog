@@ -6,7 +6,7 @@
     "category": "建站记录",
     "date": "2026-07-03",
     "readTime": "4 分钟",
-    "featured": true,
+    "featured": false,
     "content": "<p>今天，这个个人博客正式上线了。</p><p>网站使用纯 HTML、CSS 和 JavaScript 制作，部署在 Cloudflare Pages 上。这样的好处是结构简单、打开速度快，而且几乎不需要维护服务器。</p><h2>为什么要做个人博客</h2><p>很多问题解决之后，很容易随着时间忘记。博客可以把实际操作、踩坑过程和最终解决办法保存下来，也方便以后继续完善。</p><h2>目前的内容方向</h2><ul><li><p>网站搭建和技术工具</p></li><li><p>自由职业中的效率经验</p></li><li><p>真实项目的过程记录</p></li></ul><blockquote><p>先上线，再慢慢完善。一个能持续更新的网站，比一直停留在计划里更有价值。</p></blockquote><h2>下一步</h2><p>接下来会持续优化网站内容，并逐步加入更多真实文章。</p>"
   },
   {
@@ -16,7 +16,7 @@
     "category": "技术教程",
     "date": "2026-07-02",
     "readTime": "6 分钟",
-    "featured": true,
+    "featured": false,
     "content": "<p>Cloudflare Pages 很适合部署个人主页、博客、作品集和产品介绍页。</p><h2>准备网站文件</h2><p>网站压缩包第一层需要直接看到 <code>index.html</code>，否则部署后可能无法正常显示首页。</p><h2>上传并部署</h2><ol><li><p>进入 Cloudflare 的 Workers 和 Pages。</p></li><li><p>创建 Pages 项目。</p></li><li><p>选择直接上传。</p></li><li><p>上传包含 index.html 的 ZIP 压缩包。</p></li></ol><h2>绑定自己的域名</h2><p>部署完成后，在项目的“自定义域”中添加域名。域名已经托管在 Cloudflare 时，DNS 通常会自动完成配置。</p>"
   },
   {
@@ -26,7 +26,17 @@
     "category": "效率方法",
     "date": "2026-06-28",
     "readTime": "5 分钟",
-    "featured": true,
+    "featured": false,
     "content": "<p>自由职业最大的挑战之一，是没有固定流程时，很多精力会浪费在“下一步做什么”上。</p><h2>只保留三个区域</h2><ul><li><p><strong>今天：</strong>只放今天必须完成的任务。</p></li><li><p><strong>本周：</strong>放需要推进但不要求当天完成的事项。</p></li><li><p><strong>资料库：</strong>保存链接、文档、账号信息和操作记录。</p></li></ul><h2>每天结束前做一次整理</h2><p>花十分钟记录已完成事项、未解决问题和明天第一件要做的事，第二天开始工作会轻松很多。</p>"
+  },
+  {
+    "id": "chunshabi",
+    "title": "王思聪是个大傻逼",
+    "excerpt": "正如我所说：王思聪是个大傻逼",
+    "category": "纯傻逼",
+    "date": "2026-07-03",
+    "readTime": "5 分钟",
+    "featured": true,
+    "content": "<p></p>"
   }
 ]
