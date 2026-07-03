@@ -1,0 +1,140 @@
+media:
+  input: media
+  output: /media
+  rename: safe
+  categories: [image]
+
+content:
+  - name: site
+    label: 网站设置
+    type: file
+    path: site.json
+    format: json
+    fields:
+      - name: siteName
+        label: 网站名称
+        type: string
+        required: true
+      - name: brandInitial
+        label: Logo 字母
+        type: string
+        required: true
+        description: 建议填写一个英文字母
+      - name: metaDescription
+        label: 网站描述
+        type: text
+      - name: heroEyebrow
+        label: 首页小标题
+        type: string
+      - name: heroTitle
+        label: 首页大标题
+        type: text
+        description: 可以换行
+      - name: heroDescription
+        label: 首页介绍
+        type: text
+      - name: featuredTitle
+        label: 精选文章标题
+        type: string
+      - name: updateTitle
+        label: 首页底部标题
+        type: string
+      - name: updateDescription
+        label: 首页底部介绍
+        type: text
+      - name: aboutTitle
+        label: 关于页标题
+        type: string
+      - name: aboutParagraph1
+        label: 关于我第一段
+        type: text
+      - name: aboutParagraph2
+        label: 关于我第二段
+        type: text
+      - name: aboutParagraph3
+        label: 关于我第三段
+        type: text
+      - name: authorName
+        label: 作者名称
+        type: string
+      - name: authorTagline
+        label: 作者简介
+        type: string
+      - name: topics
+        label: 常写主题
+        type: string
+      - name: website
+        label: 网站地址
+        type: string
+      - name: footerText
+        label: 页脚文字
+        type: string
+
+  - name: posts
+    label: 文章管理
+    type: file
+    path: posts.json
+    format: json
+    list: true
+    fields:
+      - name: id
+        label: 文章链接标识
+        type: string
+        required: true
+        description: 只能使用小写英文字母、数字和短横线，例如 my-first-post
+        pattern:
+          regex: "^[a-z0-9-]+$"
+          message: "只能使用小写英文字母、数字和短横线"
+      - name: title
+        label: 文章标题
+        type: string
+        required: true
+      - name: excerpt
+        label: 文章摘要
+        type: text
+        required: true
+      - name: category
+        label: 文章分类
+        type: string
+        required: true
+      - name: date
+        label: 发布日期
+        type: date
+        required: true
+      - name: readTime
+        label: 阅读时间
+        type: string
+        default: "5 分钟"
+      - name: featured
+        label: 首页精选
+        type: boolean
+        default: false
+      - name: cover
+        label: 封面图片
+        type: image
+        required: false
+        options:
+          media: media
+          path: covers
+          rename: safe
+      - name: content
+        label: 文章正文
+        type: rich-text
+        required: true
+        options:
+          format: html
+          media: media
+          path: posts
+          rename: safe
+          switcher: true
+
+settings:
+  content:
+    merge: true
+  commit:
+    identity: app
+    templates:
+      create: "新增内容：{path}"
+      update: "更新内容：{path}"
+      delete: "删除内容：{path}"
+      rename: "重命名内容：{oldPath} -> {newPath}"

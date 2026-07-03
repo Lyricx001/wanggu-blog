@@ -1,0 +1,42 @@
+WANGGU BLOG 后台管理版
+=======================
+
+GitHub 用户名：Lyricx001
+建议仓库名称：wanggu-blog
+仓库地址：https://github.com/Lyricx001/wanggu-blog
+
+这个版本已经接入 Pages CMS：
+- 可以在网页后台新建、修改和删除文章
+- 可以修改网站名称、首页介绍和“关于我”
+- 可以上传文章封面和正文图片
+- 保存后自动写入 GitHub
+- Cloudflare Pages 会自动重新部署网站
+
+重要：
+1. 先解压这个 ZIP。
+2. 上传“解压后里面的全部文件”到 GitHub 仓库。
+3. 不要只把 ZIP 文件上传到 GitHub。
+4. .pages.yml 是隐藏配置文件，不能删除。
+
+Pages CMS 后台：
+https://app.pagescms.org
+
+Cloudflare Pages Git 部署建议：
+- 生产分支：main
+- 框架预设：无
+- 构建命令：exit 0
+- 构建输出目录：/
+- 根目录：留空
+
+文章后台字段：
+- 文章链接标识：只能写小写英文、数字、短横线
+- 文章标题
+- 摘要
+- 分类
+- 日期
+- 阅读时间
+- 首页精选
+- 封面图片
+- 正文
+
+保存文章后，等待 Cloudflare 部署完成，网站会自动更新。
