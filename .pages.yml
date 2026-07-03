@@ -1,8 +1,10 @@
 media:
-  input: media
-  output: /media
-  rename: safe
-  categories: [image]
+  - name: media
+    label: 图片媒体库
+    input: media
+    output: /media
+    rename: safe
+    categories: [image]
 
 content:
   - name: site
@@ -113,6 +115,7 @@ content:
         label: 封面图片
         type: image
         required: false
+        description: 上传文章封面，首页精选卡片和文章详情页都会显示
         options:
           media: media
           path: covers
@@ -121,6 +124,7 @@ content:
         label: 文章正文
         type: rich-text
         required: true
+        description: 正文编辑器中可以直接插入图片，上传后会自动保存到 media/posts 目录
         options:
           format: html
           media: media
