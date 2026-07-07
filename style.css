@@ -2007,3 +2007,117 @@ body {
     border: 0 !important;
   }
 }
+
+
+/* 搜索修复：顶部放大镜展开，不再打开弹窗 */
+.inline-search {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  transition: width .25s ease, border-color .25s ease, background .25s ease;
+}
+
+.inline-search.expanded {
+  width: min(320px, 42vw);
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--surface-solid) 82%, transparent);
+}
+
+.inline-search .icon-btn {
+  flex: 0 0 40px;
+  border-color: var(--line);
+}
+
+.inline-search.expanded .icon-btn {
+  border-color: transparent;
+}
+
+.inline-search input {
+  width: 0;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  opacity: 0;
+  color: var(--text);
+  background: transparent;
+  transition: width .25s ease, opacity .18s ease;
+}
+
+.inline-search.expanded input {
+  width: 100%;
+  padding-right: 12px;
+  opacity: 1;
+}
+
+.inline-search-results {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 80;
+  width: min(420px, 86vw);
+  max-height: min(54vh, 460px);
+  overflow: auto;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface-solid);
+  box-shadow: 0 20px 60px rgba(0,0,0,.16);
+}
+
+.inline-search-results[hidden] {
+  display: none;
+}
+
+.inline-search-result {
+  display: block;
+  padding: 13px;
+  border-radius: 15px;
+}
+
+.inline-search-result:hover {
+  background: rgba(127,127,127,.09);
+}
+
+.inline-search-result strong {
+  display: block;
+  margin: 6px 0 5px;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.inline-search-result p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.inline-search-empty {
+  padding: 20px 12px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .inline-search.expanded {
+    position: fixed;
+    left: 14px;
+    right: 14px;
+    top: 14px;
+    z-index: 120;
+    width: auto;
+    background: var(--surface-solid);
+    box-shadow: 0 16px 50px rgba(0,0,0,.18);
+  }
+
+  .inline-search-results {
+    left: 0;
+    right: 0;
+    width: auto;
+  }
+}

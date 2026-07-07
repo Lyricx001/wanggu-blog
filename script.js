@@ -980,10 +980,9 @@ function setupHeroParallax(root) {
 
 /* 功能升级：全站搜索 / 公告 / 目录 / 文章工具 */
 const openSearchBtn = document.getElementById("openSearchBtn");
-const closeSearchBtn = document.getElementById("closeSearchBtn");
-const globalSearchOverlay = document.getElementById("globalSearchOverlay");
-const globalSearchInput = document.getElementById("globalSearchInput");
-const globalSearchResults = document.getElementById("globalSearchResults");
+const inlineSearch = document.getElementById("inlineSearch");
+const inlineSearchInput = document.getElementById("inlineSearchInput");
+const inlineSearchResults = document.getElementById("inlineSearchResults");
 const backToTopBtn = document.getElementById("backToTopBtn");
 const announcementModal = document.getElementById("announcementModal");
 const announcementClose = document.getElementById("announcementClose");
@@ -1014,27 +1013,30 @@ function applyFeatureVisibility() {
 }
 
 function openGlobalSearch() {
-  if (SITE_SETTINGS.enableGlobalSearch === false || !globalSearchOverlay) return;
-  globalSearchOverlay.hidden = false;
-  document.body.style.overflow = "hidden";
-  renderGlobalSearchResults("");
-  requestAnimationFrame(() => globalSearchInput?.focus());
+  if (SITE_SETTINGS.enableGlobalSearch === false || !inlineSearch) return;
+  inlineSearch.classList.add("expanded");
+  renderGlobalSearchResults(inlineSearchInput?.value || "");
+  requestAnimationFrame(() => inlineSearchInput?.focus());
 }
 
 function closeGlobalSearch() {
-  if (!globalSearchOverlay) return;
-  globalSearchOverlay.hidden = true;
-  document.body.style.overflow = "";
-  if (globalSearchInput) globalSearchInput.value = "";
+  if (!inlineSearch) return;
+  inlineSearch.classList.remove("expanded");
+  if (inlineSearchInput) inlineSearchInput.value = "";
+  if (inlineSearchResults) inlineSearchResults.hidden = true;
 }
 
 function renderGlobalSearchResults(keyword) {
-  if (!globalSearchResults) return;
+  if (!inlineSearchResults) return;
 
   const normalizedKeyword = keyword.trim().toLowerCase();
-  const items = BLOG_POSTS.filter((post) => {
-    if (!normalizedKeyword) return true;
+  if (!normalizedKeyword) {
+    inlineSearchResults.innerHTML = '<div class="inline-search-empty">输入关键词搜索文章</div>';
+    inlineSearchResults.hidden = false;
+    return;
+  }
 
+  const items = BLOG_POSTS.filter((post) => {
     const haystack = [
       post.title,
       post.excerpt,
@@ -1043,32 +1045,44 @@ function renderGlobalSearchResults(keyword) {
     ].join(" ").toLowerCase();
 
     return haystack.includes(normalizedKeyword);
-  }).slice(0, 12);
+  }).slice(0, 8);
 
   if (!items.length) {
-    globalSearchResults.innerHTML = '<div class="search-result-empty">没有找到相关文章</div>';
+    inlineSearchResults.innerHTML = '<div class="inline-search-empty">没有找到相关文章</div>';
+    inlineSearchResults.hidden = false;
     return;
   }
 
-  globalSearchResults.innerHTML = items.map((post) => `
-    <a class="search-result-item" href="#post/${encodeURIComponent(post.id)}">
+  inlineSearchResults.innerHTML = items.map((post) => `
+    <a class="inline-search-result" href="#post/${encodeURIComponent(post.id)}">
       <span class="tag">${escapeHTML(post.category)}</span>
       <strong>${escapeHTML(post.title)}</strong>
       <p>${escapeHTML(post.excerpt)}</p>
     </a>
   `).join("");
+
+  inlineSearchResults.hidden = false;
 }
 
-openSearchBtn?.addEventListener("click", openGlobalSearch);
-closeSearchBtn?.addEventListener("click", closeGlobalSearch);
-globalSearchOverlay?.addEventListener("click", (event) => {
-  if (event.target === globalSearchOverlay) closeGlobalSearch();
+openSearchBtn?.addEventListener("click", () => {
+  if (inlineSearch?.classList.contains("expanded")) {
+    closeGlobalSearch();
+  } else {
+    openGlobalSearch();
+  }
 });
-globalSearchInput?.addEventListener("input", () => {
-  renderGlobalSearchResults(globalSearchInput.value);
+
+inlineSearchInput?.addEventListener("input", () => {
+  renderGlobalSearchResults(inlineSearchInput.value);
 });
-globalSearchResults?.addEventListener("click", (event) => {
+
+inlineSearchResults?.addEventListener("click", (event) => {
   if (event.target.closest("a")) closeGlobalSearch();
+});
+
+document.addEventListener("click", (event) => {
+  if (!inlineSearch?.classList.contains("expanded")) return;
+  if (!inlineSearch.contains(event.target)) closeGlobalSearch();
 });
 
 document.addEventListener("keydown", (event) => {
@@ -1080,7 +1094,7 @@ document.addEventListener("keydown", (event) => {
   }
 
   if (event.key === "Escape") {
-    if (globalSearchOverlay && !globalSearchOverlay.hidden) closeGlobalSearch();
+    if (inlineSearch?.classList.contains("expanded")) closeGlobalSearch();
     if (announcementModal && !announcementModal.hidden) closeAnnouncement();
   }
 

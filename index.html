@@ -33,7 +33,11 @@
       </nav>
 
       <div class="topbar-actions">
-        <button id="openSearchBtn" class="icon-btn" type="button" aria-label="打开搜索">⌕</button>
+        <div id="inlineSearch" class="inline-search">
+          <button id="openSearchBtn" class="icon-btn" type="button" aria-label="搜索">⌕</button>
+          <input id="inlineSearchInput" type="search" placeholder="搜索文章..." autocomplete="off" />
+          <div id="inlineSearchResults" class="inline-search-results" hidden></div>
+        </div>
         <button id="themeToggle" class="icon-btn" type="button" aria-label="切换深色模式">
           <span class="theme-icon">◐</span>
         </button>
@@ -166,20 +170,6 @@
   </template>
 
 
-
-  <div id="globalSearchOverlay" class="global-search-overlay" hidden>
-    <div class="global-search-panel card" role="dialog" aria-modal="true" aria-label="全站搜索">
-      <div class="global-search-head">
-        <strong>全站搜索</strong>
-        <button id="closeSearchBtn" class="mini-icon-btn" type="button" aria-label="关闭搜索">×</button>
-      </div>
-      <label class="global-search-box">
-        <span>⌕</span>
-        <input id="globalSearchInput" type="search" placeholder="搜索标题、分类、摘要、正文..." autocomplete="off" />
-      </label>
-      <div id="globalSearchResults" class="global-search-results"></div>
-    </div>
-  </div>
 
   <div id="announcementModal" class="announcement-modal" hidden>
     <div class="announcement-card card" role="dialog" aria-modal="true" aria-label="网站公告">
