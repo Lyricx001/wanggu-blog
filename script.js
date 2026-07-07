@@ -21,7 +21,22 @@ const DEFAULT_SITE_SETTINGS = {
   authorTagline: "自由职业者 · 实践者 · 持续学习",
   topics: "技术 / 跨境电商 / 效率工具",
   website: "wanggu.top",
-  footerText: "由 Cloudflare Pages 托管"
+  footerText: "由 Cloudflare Pages 托管",
+  enableGlobalSearch: true,
+  enableReadingProgress: true,
+  enableBackToTop: true,
+  enablePostToc: true,
+  announcementEnabled: false,
+  announcementTitle: "网站公告",
+  announcementText: "欢迎来到我的个人博客。",
+  announcementButtonText: "查看文章",
+  announcementButtonUrl: "#articles",
+  enableArchivePage: true,
+  enableFavorites: true,
+  enableRelatedPosts: true,
+  enablePrevNext: true,
+  enableCopyCode: true,
+  enablePrintPost: true
 };
 
 function escapeHTML(value = "") {
@@ -85,6 +100,8 @@ function applyGlobalSettings() {
       SITE_SETTINGS.metaDescription || DEFAULT_SITE_SETTINGS.metaDescription
     );
   }
+
+  applyFeatureVisibility();
 }
 const year = document.getElementById("year");
 const themeToggle = document.getElementById("themeToggle");
@@ -307,7 +324,277 @@ function renderPost(postId) {
 
   document.title = `${post.title} - ${SITE_SETTINGS.siteName || "WANGGU BLOG"}`;
   setupContentImages();
+  setupPostToc();
+  setupPostActions(post);
+  setupExtraPostFunctions(post);
   setActiveNav("post");
+}
+
+
+
+/* 更多功能升级：归档 / 收藏 / 相关推荐 / 代码复制 */
+const FAVORITES_KEY = "wanggu-favorite-posts";
+
+function getSortedPosts() {
+  return [...BLOG_POSTS].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+}
+
+function getFavoriteIds() {
+  try {
+    return JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function setFavoriteIds(ids) {
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify([...new Set(ids)]));
+}
+
+function isFavorite(postId) {
+  return getFavoriteIds().includes(postId);
+}
+
+function toggleFavorite(postId) {
+  const ids = getFavoriteIds();
+  if (ids.includes(postId)) {
+    setFavoriteIds(ids.filter((id) => id !== postId));
+    return false;
+  }
+
+  setFavoriteIds([postId, ...ids]);
+  return true;
+}
+
+function renderArchive() {
+  if (SITE_SETTINGS.enableArchivePage === false) {
+    location.hash = "#articles";
+    return;
+  }
+
+  app.replaceChildren(cloneTemplate("archiveTemplate"));
+
+  const posts = getSortedPosts();
+  const categories = new Set(posts.map((post) => post.category));
+  const years = new Set(posts.map((post) => String(post.date).slice(0, 4)));
+
+  document.getElementById("archiveStats").innerHTML = `
+    <div class="archive-stat"><span>文章总数</span><strong>${posts.length}</strong></div>
+    <div class="archive-stat"><span>分类数量</span><strong>${categories.size}</strong></div>
+    <div class="archive-stat"><span>归档年份</span><strong>${years.size}</strong></div>
+    <div class="archive-stat"><span>持续更新</span><strong>∞</strong></div>
+  `;
+
+  const grouped = posts.reduce((acc, post) => {
+    const year = String(post.date).slice(0, 4) || "未知年份";
+    const month = String(post.date).slice(5, 7) || "00";
+    acc[year] ||= {};
+    acc[year][month] ||= [];
+    acc[year][month].push(post);
+    return acc;
+  }, {});
+
+  document.getElementById("archiveTimeline").innerHTML = Object.entries(grouped)
+    .sort(([a], [b]) => b.localeCompare(a))
+    .map(([year, months]) => `
+      <section class="archive-year">
+        <h2>${year}</h2>
+        ${Object.entries(months).sort(([a], [b]) => b.localeCompare(a)).map(([month, monthPosts]) => `
+          <div class="archive-month">
+            <div class="archive-month-head">
+              <strong>${month} 月</strong>
+              <span>${monthPosts.length} 篇</span>
+            </div>
+            ${monthPosts.map((post) => `
+              <a class="archive-link" href="#post/${encodeURIComponent(post.id)}">
+                <span class="archive-date">${formatDate(post.date)}</span>
+                <strong>${escapeHTML(post.title)}</strong>
+                <span class="tag">${escapeHTML(post.category)}</span>
+              </a>
+            `).join("")}
+          </div>
+        `).join("")}
+      </section>
+    `).join("");
+
+  setActiveNav("archive");
+}
+
+function renderFavorites() {
+  if (SITE_SETTINGS.enableFavorites === false) {
+    location.hash = "#articles";
+    return;
+  }
+
+  app.replaceChildren(cloneTemplate("favoritesTemplate"));
+
+  const ids = getFavoriteIds();
+  const posts = ids
+    .map((id) => BLOG_POSTS.find((post) => post.id === id))
+    .filter(Boolean);
+
+  const list = document.getElementById("favoriteList");
+  const empty = document.getElementById("favoriteEmpty");
+
+  list.innerHTML = posts.map((post) => `
+    <a class="post-list-item card ${post.cover ? "has-cover" : ""}" href="#post/${post.id}">
+      ${post.cover ? `<img class="post-list-thumb" src="${encodeURI(post.cover)}" alt="${escapeHTML(post.title)}" loading="lazy" />` : `<div class="date">${formatDate(post.date)}</div>`}
+      <div>
+        ${post.cover ? `<div class="date">${formatDate(post.date)}</div>` : ""}
+        <span class="tag">${escapeHTML(post.category)}</span>
+        <h3>${escapeHTML(post.title)}<span class="favorite-badge">已收藏</span></h3>
+        <p>${escapeHTML(post.excerpt)}</p>
+      </div>
+      <span class="arrow">→</span>
+    </a>
+  `).join("");
+
+  empty.hidden = posts.length !== 0;
+  setActiveNav("favorites");
+}
+
+function setupExtraPostFunctions(post) {
+  setupCodeCopyButtons();
+  setupFavoriteButton(post);
+  setupShareAndPrint(post);
+  renderPrevNext(post);
+  renderRelatedPosts(post);
+}
+
+function setupCodeCopyButtons() {
+  if (SITE_SETTINGS.enableCopyCode === false) return;
+
+  document.querySelectorAll(".article-body pre").forEach((pre) => {
+    if (pre.parentElement?.classList.contains("code-wrap")) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "code-wrap";
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+
+    const button = document.createElement("button");
+    button.className = "copy-code-btn";
+    button.type = "button";
+    button.textContent = "复制代码";
+    wrap.appendChild(button);
+
+    button.addEventListener("click", async () => {
+      const text = pre.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = "已复制";
+      } catch {
+        button.textContent = "复制失败";
+      }
+      window.setTimeout(() => button.textContent = "复制代码", 1200);
+    });
+  });
+}
+
+function setupFavoriteButton(post) {
+  const button = document.getElementById("toggleFavoritePost");
+  if (!button) return;
+
+  if (SITE_SETTINGS.enableFavorites === false) {
+    button.hidden = true;
+    return;
+  }
+
+  const update = () => {
+    button.textContent = isFavorite(post.id) ? "取消收藏" : "收藏文章";
+  };
+
+  update();
+
+  button.addEventListener("click", () => {
+    toggleFavorite(post.id);
+    update();
+  });
+}
+
+function setupShareAndPrint(post) {
+  const shareButton = document.getElementById("sharePost");
+  const printButton = document.getElementById("printPost");
+
+  const url = `${location.origin}${location.pathname}#post/${encodeURIComponent(post.id)}`;
+
+  shareButton?.addEventListener("click", async () => {
+    if (navigator.share) {
+      await navigator.share({
+        title: post.title,
+        text: post.excerpt,
+        url
+      });
+    } else {
+      try {
+        await navigator.clipboard.writeText(url);
+        shareButton.textContent = "链接已复制";
+        window.setTimeout(() => shareButton.textContent = "分享", 1200);
+      } catch {
+        prompt("复制这个链接：", url);
+      }
+    }
+  });
+
+  if (printButton) {
+    printButton.hidden = SITE_SETTINGS.enablePrintPost === false;
+    printButton.addEventListener("click", () => window.print());
+  }
+}
+
+function renderPrevNext(post) {
+  if (SITE_SETTINGS.enablePrevNext === false) return;
+
+  const posts = getSortedPosts();
+  const index = posts.findIndex((item) => item.id === post.id);
+  const prev = posts[index - 1];
+  const next = posts[index + 1];
+
+  if (!prev && !next) return;
+
+  const box = document.createElement("section");
+  box.className = "post-extra card";
+  box.innerHTML = `
+    <h2>继续阅读</h2>
+    <div class="prev-next">
+      ${prev ? `<a href="#post/${encodeURIComponent(prev.id)}"><span>上一篇</span><strong>${escapeHTML(prev.title)}</strong></a>` : "<div></div>"}
+      ${next ? `<a href="#post/${encodeURIComponent(next.id)}"><span>下一篇</span><strong>${escapeHTML(next.title)}</strong></a>` : "<div></div>"}
+    </div>
+  `;
+
+  document.querySelector(".post-page")?.appendChild(box);
+}
+
+function renderRelatedPosts(post) {
+  if (SITE_SETTINGS.enableRelatedPosts === false) return;
+
+  const related = getSortedPosts()
+    .filter((item) => item.id !== post.id)
+    .sort((a, b) => {
+      const aScore = a.category === post.category ? 1 : 0;
+      const bScore = b.category === post.category ? 1 : 0;
+      return bScore - aScore;
+    })
+    .slice(0, 3);
+
+  if (!related.length) return;
+
+  const box = document.createElement("section");
+  box.className = "post-extra card";
+  box.innerHTML = `
+    <h2>相关推荐</h2>
+    <div class="related-grid">
+      ${related.map((item) => `
+        <a class="related-card" href="#post/${encodeURIComponent(item.id)}">
+          <span class="tag">${escapeHTML(item.category)}</span>
+          <h3>${escapeHTML(item.title)}</h3>
+          <p>${escapeHTML(item.excerpt)}</p>
+        </a>
+      `).join("")}
+    </div>
+  `;
+
+  document.querySelector(".post-page")?.appendChild(box);
 }
 
 function router() {
@@ -318,6 +605,10 @@ function router() {
 
   if (route === "articles") {
     renderArticles();
+  } else if (route === "archive") {
+    renderArchive();
+  } else if (route === "favorites") {
+    renderFavorites();
   } else if (route === "about") {
     renderAbout();
   } else if (route === "post") {
@@ -364,9 +655,16 @@ function updateScrollEffects() {
 
   if (scrollProgress) {
     scrollProgress.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+    scrollProgress.hidden = SITE_SETTINGS.enableReadingProgress === false;
   }
 
   topbar?.classList.toggle("scrolled", window.scrollY > 20);
+
+  const backToTopBtn = document.getElementById("backToTopBtn");
+  if (backToTopBtn) {
+    backToTopBtn.hidden =
+      SITE_SETTINGS.enableBackToTop === false || window.scrollY < 420;
+  }
 }
 
 window.addEventListener("scroll", updateScrollEffects, { passive: true });
@@ -677,6 +975,248 @@ function setupHeroParallax(root) {
 
 // 顶部深色模式按钮也加入点击水波纹
 
+
+
+
+/* 功能升级：全站搜索 / 公告 / 目录 / 文章工具 */
+const openSearchBtn = document.getElementById("openSearchBtn");
+const closeSearchBtn = document.getElementById("closeSearchBtn");
+const globalSearchOverlay = document.getElementById("globalSearchOverlay");
+const globalSearchInput = document.getElementById("globalSearchInput");
+const globalSearchResults = document.getElementById("globalSearchResults");
+const backToTopBtn = document.getElementById("backToTopBtn");
+const announcementModal = document.getElementById("announcementModal");
+const announcementClose = document.getElementById("announcementClose");
+const announcementOk = document.getElementById("announcementOk");
+const announcementTitle = document.getElementById("announcementTitle");
+const announcementText = document.getElementById("announcementText");
+const announcementLink = document.getElementById("announcementLink");
+
+function stripHTML(value = "") {
+  const temp = document.createElement("div");
+  temp.innerHTML = value;
+  return temp.textContent || temp.innerText || "";
+}
+
+function applyFeatureVisibility() {
+  if (openSearchBtn) {
+    openSearchBtn.hidden = SITE_SETTINGS.enableGlobalSearch === false;
+  }
+
+  if (scrollProgress) {
+    scrollProgress.hidden = SITE_SETTINGS.enableReadingProgress === false;
+  }
+
+  document.querySelector('[data-nav="archive"]')?.toggleAttribute("hidden", SITE_SETTINGS.enableArchivePage === false);
+  document.querySelector('[data-nav="favorites"]')?.toggleAttribute("hidden", SITE_SETTINGS.enableFavorites === false);
+
+  maybeShowAnnouncement();
+}
+
+function openGlobalSearch() {
+  if (SITE_SETTINGS.enableGlobalSearch === false || !globalSearchOverlay) return;
+  globalSearchOverlay.hidden = false;
+  document.body.style.overflow = "hidden";
+  renderGlobalSearchResults("");
+  requestAnimationFrame(() => globalSearchInput?.focus());
+}
+
+function closeGlobalSearch() {
+  if (!globalSearchOverlay) return;
+  globalSearchOverlay.hidden = true;
+  document.body.style.overflow = "";
+  if (globalSearchInput) globalSearchInput.value = "";
+}
+
+function renderGlobalSearchResults(keyword) {
+  if (!globalSearchResults) return;
+
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const items = BLOG_POSTS.filter((post) => {
+    if (!normalizedKeyword) return true;
+
+    const haystack = [
+      post.title,
+      post.excerpt,
+      post.category,
+      stripHTML(post.content)
+    ].join(" ").toLowerCase();
+
+    return haystack.includes(normalizedKeyword);
+  }).slice(0, 12);
+
+  if (!items.length) {
+    globalSearchResults.innerHTML = '<div class="search-result-empty">没有找到相关文章</div>';
+    return;
+  }
+
+  globalSearchResults.innerHTML = items.map((post) => `
+    <a class="search-result-item" href="#post/${encodeURIComponent(post.id)}">
+      <span class="tag">${escapeHTML(post.category)}</span>
+      <strong>${escapeHTML(post.title)}</strong>
+      <p>${escapeHTML(post.excerpt)}</p>
+    </a>
+  `).join("");
+}
+
+openSearchBtn?.addEventListener("click", openGlobalSearch);
+closeSearchBtn?.addEventListener("click", closeGlobalSearch);
+globalSearchOverlay?.addEventListener("click", (event) => {
+  if (event.target === globalSearchOverlay) closeGlobalSearch();
+});
+globalSearchInput?.addEventListener("input", () => {
+  renderGlobalSearchResults(globalSearchInput.value);
+});
+globalSearchResults?.addEventListener("click", (event) => {
+  if (event.target.closest("a")) closeGlobalSearch();
+});
+
+document.addEventListener("keydown", (event) => {
+  const isTyping = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName);
+
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+    event.preventDefault();
+    openGlobalSearch();
+  }
+
+  if (event.key === "Escape") {
+    if (globalSearchOverlay && !globalSearchOverlay.hidden) closeGlobalSearch();
+    if (announcementModal && !announcementModal.hidden) closeAnnouncement();
+  }
+
+  if (!isTyping && event.key === "/") {
+    event.preventDefault();
+    openGlobalSearch();
+  }
+});
+
+backToTopBtn?.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+function maybeShowAnnouncement() {
+  if (!announcementModal || SITE_SETTINGS.announcementEnabled !== true) return;
+
+  const key = `wanggu-announcement-${SITE_SETTINGS.announcementTitle || "notice"}`;
+  if (localStorage.getItem(key) === "closed") return;
+
+  if (announcementTitle) {
+    announcementTitle.textContent =
+      SITE_SETTINGS.announcementTitle || DEFAULT_SITE_SETTINGS.announcementTitle;
+  }
+
+  if (announcementText) {
+    announcementText.textContent =
+      SITE_SETTINGS.announcementText || DEFAULT_SITE_SETTINGS.announcementText;
+  }
+
+  if (announcementLink) {
+    const url = SITE_SETTINGS.announcementButtonUrl || "#articles";
+    const text = SITE_SETTINGS.announcementButtonText || "查看文章";
+    announcementLink.href = url;
+    announcementLink.textContent = text;
+    announcementLink.hidden = !url;
+  }
+
+  window.setTimeout(() => {
+    announcementModal.hidden = false;
+  }, 700);
+}
+
+function closeAnnouncement() {
+  if (!announcementModal) return;
+  const key = `wanggu-announcement-${SITE_SETTINGS.announcementTitle || "notice"}`;
+  localStorage.setItem(key, "closed");
+  announcementModal.hidden = true;
+}
+
+announcementClose?.addEventListener("click", closeAnnouncement);
+announcementOk?.addEventListener("click", closeAnnouncement);
+
+function setupPostToc() {
+  const toc = document.getElementById("postToc");
+  const tocList = document.getElementById("postTocList");
+  const content = document.getElementById("postContent");
+
+  if (!toc || !tocList || !content) return;
+
+  if (SITE_SETTINGS.enablePostToc === false) {
+    toc.hidden = true;
+    return;
+  }
+
+  const headings = Array.from(content.querySelectorAll("h2, h3"));
+  if (headings.length < 2) {
+    toc.hidden = true;
+    return;
+  }
+
+  headings.forEach((heading, index) => {
+    if (!heading.id) heading.id = `heading-${index + 1}`;
+  });
+
+  tocList.innerHTML = headings.map((heading) => `
+    <a href="#${heading.id}" data-heading="${heading.id}" class="${heading.tagName === "H3" ? "toc-sub" : ""}">
+      ${escapeHTML(heading.textContent || "")}
+    </a>
+  `).join("");
+
+  toc.hidden = false;
+
+  const tocLinks = Array.from(tocList.querySelectorAll("a"));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      tocLinks.forEach((link) => {
+        link.classList.toggle("active", link.dataset.heading === entry.target.id);
+      });
+    });
+  }, {
+    rootMargin: "-20% 0px -70% 0px",
+    threshold: 0
+  });
+
+  headings.forEach((heading) => observer.observe(heading));
+}
+
+function setupPostActions(post) {
+  const copyPostLink = document.getElementById("copyPostLink");
+  const increaseFont = document.getElementById("increaseFont");
+  const decreaseFont = document.getElementById("decreaseFont");
+  const content = document.getElementById("postContent");
+
+  let currentSize = Number(localStorage.getItem("wanggu-article-font-size") || 17);
+
+  function applySize() {
+    currentSize = Math.max(15, Math.min(22, currentSize));
+    content?.style.setProperty("--article-font-size", `${currentSize}px`);
+    localStorage.setItem("wanggu-article-font-size", String(currentSize));
+  }
+
+  applySize();
+
+  copyPostLink?.addEventListener("click", async () => {
+    const link = `${location.origin}${location.pathname}#post/${encodeURIComponent(post.id)}`;
+
+    try {
+      await navigator.clipboard.writeText(link);
+      copyPostLink.textContent = "已复制";
+      window.setTimeout(() => copyPostLink.textContent = "复制文章链接", 1200);
+    } catch {
+      prompt("复制这个链接：", link);
+    }
+  });
+
+  increaseFont?.addEventListener("click", () => {
+    currentSize += 1;
+    applySize();
+  });
+
+  decreaseFont?.addEventListener("click", () => {
+    currentSize -= 1;
+    applySize();
+  });
+}
 
 function setupContentImages() {
   const content = document.getElementById("postContent");
