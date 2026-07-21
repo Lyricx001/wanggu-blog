@@ -2121,3 +2121,48 @@ body {
     width: auto;
   }
 }
+
+
+/* 问卷调查侧边悬浮按钮 */
+.wenjuan-float {
+  position: fixed;
+  left: 0;
+  bottom: 10%;
+  z-index: 9996;
+  width: 30px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  background: #26B941;
+  color: #FFFFFF;
+  text-decoration: none;
+  line-height: 24px;
+  writing-mode: vertical-rl;
+  font-family: PingFangSC-Regular, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  box-shadow: 0 10px 28px rgba(38, 185, 65, .28);
+  transition: transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+
+.wenjuan-float:hover {
+  transform: translateX(3px);
+  box-shadow: 0 14px 34px rgba(38, 185, 65, .36);
+}
+
+@media (max-width: 600px) {
+  .wenjuan-float {
+    bottom: 18%;
+    width: 28px;
+    height: 92px;
+    font-size: 14px;
+  }
+}
+
+@media print {
+  .wenjuan-float {
+    display: none !important;
+  }
+}
